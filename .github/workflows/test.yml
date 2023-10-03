@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - src
+      - tests
+      - config
+  pull_request_review:
+    paths:
+      - src
+      - tests
+      - config
+  pull_request_target:
+    paths:
+      - src
+      - tests
+      - config
+    branches:
+      - master
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: "PHP unit"
+        uses: matriphe/laravel-pkg-test-action@v2
+        with:
+          operating_system: ubuntu-latest # The Operating System where the test runs
+          php_version: 7.4 # The PHP version where the test runs
+          php_extensions: pdo_sqlite,sqlite3 # The PHP extension enabled for the test, separated by comma
+          laravel_version: 7.* # The Laravel framework version where the test runs
+          branch: master # The branch name, tag name, or git reference checksum to check out
+          laravel_install_args: --prefer-dist # The arguments passed to Composer when installing Laravel framework
+          package_install_args: --prefer-dist --no-progress  # The arguments passed to Composer when installing the package
+          phpunit_args: --coverage-clover clover.xml # The arguments passed to PHPUnit when running the test
+          shell_name: bash # The shell name used to run the test
+
+      - name: "Generate test coverage badge"
+        uses: timkrase/phpunit-coverage-badge@v1.2.0
+        with:
+          coverage_badge_path: 'badge-coverage.svg'
+          push_badge: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
